@@ -1,0 +1,44 @@
+
+! 
+  It appears that the stack grows toward
+  the lower addresses and that the stack
+  pointer points at the item that is at 
+  the top of the stack.
+
+  Here, the value 5 is NOT at estack but
+  at the last slot in the stack array.
+  The value 4 is in the penultimate slot.
+
+  pushA :
+      sp <- sp-2
+      memory[sp] <- Accumulator
+
+  popA :
+      Accumulator <-  memory[sp]
+      sp <- sp+2
+
+  Run this code with the trace command...
+  t 8
+  should be fine and then 
+  dw f 30
+
+!
+
+          cseg
+
+          ldAi estack   ;
+          xchAS         ;
+
+          ldAi    5     ;
+          pushA         ;
+          ldAi    4     ;
+          pushA         ;
+
+done      jmp    done   ;
+
+
+          dseg
+stack     rw 10          ;
+estack    rw  1          ;
+
+          end

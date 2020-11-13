@@ -1,0 +1,52 @@
+	cseg
+
+	ldAi x  ;
+	stA xpr ;
+
+loop    ldAr xpr
+	cmpAi 65535;
+	je done ;
+
+	ldA xpr;
+	stA wpr;
+	ldAr xpr;
+	stA w  ;
+
+nest	ldAr wpr;
+	cmpAi 65535;
+	je break;
+
+	ldAr wpr;
+	cmpA w;
+	jae skip;
+
+	ldA w;
+	stA swap;
+	ldAr wpr;
+	stA w;
+	ldA swap;
+	stAr wpr;
+
+skip    ldA wpr ;
+	incA ;
+	incA ;
+	stA wpr;
+	jmp nest;
+
+break	ldA w ;
+    	stAr xpr ;
+	ldA xpr 
+	incA ;
+	incA ;
+	stA xpr;
+	jmp loop;
+
+done jmp done;
+
+	dseg
+x 	rw 100 ;
+xpr 	rw 1 ;
+w 	rw 1 ;
+wpr 	rw 1 ;
+swap 	rw 1 ;
+end

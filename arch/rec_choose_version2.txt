@@ -1,0 +1,88 @@
+
+!  r = choose(n,k) via :
+
+   r = choose(n-1,k-1) ;
+   r += choose(n-1,k) ;
+   no need of auxiliary locals as in other version
+
+   stack frame :
+
+   r
+   return-address
+   k 
+   n
+!
+
+
+               cseg
+               jmp       main   ;
+
+! recursive binary coefficients , choose (n,k) !
+
+choose         ldAS      2      ; ! acc = k !
+               cmpAi     0      ; ! if k == 0 !
+               jne       lab1   ; 
+               ldAi      1      ; 
+               stAS      -2     ; ! r = 1 !
+               jmp       finish ;
+
+lab1           cmpAS     4      ; ! else if k == n !
+               jne       lab2   ; 
+               ldAi      1      ;
+               stAS      -2     ; ! r = 1 !
+               jmp       finish ;
+
+lab2           ldAS      4      ; ! else !
+               decA             ;
+               stAS      -4     ; ! child n = n - 1 !
+               ldAS      2      ;
+               decA             ;
+               stAS      -6     ; ! child k = k - 1 !
+
+               addSi     -6     ; ! 6 because 3 local vars !
+               call      choose ; ! call child !
+               addSi      6     ; ! caller resp. for religning stack ptr !
+
+               ldAS      -10    ;
+               stAS      -2     ; ! r = result from child !
+
+
+               ldAS      4      ; 
+               decA             ;
+               stAS      -4     ; ! child n = n - 1 !
+               ldAS      2      ;
+               stAS      -6     ; ! child k = k !
+
+               addSi     -6     ;
+               call      choose ; ! call child !
+               addSi      6     ;
+
+               ldAS      -10    ;
+               clc              ;
+               adcAS     -2     ; ! r += choose(n-1,k) !
+               stAS      -2     ;
+
+finish         ret ;
+
+main           ldAi    4000     ;
+               xchAS            ;  ! set stack pointer !
+               ldA       mn     ;
+               pushA            ;
+               ldA       mk     ;
+               pushA            ;
+               call  choose     ;
+               addSi      4     ; ! set stack pointer to before main called !
+               ldAS      -8     ;
+               stA      ans     ;
+done           jmp     done     ;
+
+               dseg
+mn             rw         1     ;
+mk             rw         1     ;
+ans            rw         1     ;
+               end
+
+
+
+               
+

@@ -1,0 +1,157 @@
+        cseg
+        ldAi   estack    ;
+        xchAS            ;
+        jmp    main      ;
+
+!--------------------------------------------------!
+!    (hi,lo) = a*b         !
+mul     ldA    a         ;
+        stA    tlo       ;
+        ldAi   0         ;
+        stA    thi       ;
+        stA    lo        ;
+        stA    hi        ;
+
+lp      ldA    b         ; 
+        cmpAi  0         ;
+        je     mulend    ;
+
+        rcrA             ;
+        stA    b         ;
+        jae    shift     ;
+
+        ldA    lo        ;
+        clc              ;
+        adcA   tlo       ;
+        stA    lo        ;
+
+        ldA    hi        ;
+        adcA   thi       ;
+        stA    hi        ;
+
+shift   clc              ;
+        ldA    tlo       ;
+        rclA             ;
+        stA    tlo       ;
+
+        ldA    thi       ;
+        rclA             ;
+        stA    thi       ;
+
+        jmp    lp        ;
+
+mulend  ret              ;
+
+!--------------------------------------------------!
+! asnwer = int(sqrt(n)) , 0 <= n <= ffff !
+sqrt    ldAi   0         ;
+        stAS   -6        ; ! answer = 0 !
+        ldAi   1         ; 
+        stAS   -4        ; ! odd = 1 !
+        stAS   -2        ; ! sum = 1 !
+
+loop    cmpAS  -8        ; ! terminate loop if sum > n !
+        ja     sqend     ;
+       
+        ldAS   -6        ;
+        clc              ;
+        adcAi  1         ;
+        stAS   -6        ; ! answer ++ !
+
+        ldAS   -4        ;
+        clc              ;
+        adcAi  2         ;
+        stAS   -4        ; ! odd += 2 !
+
+        clc              ;
+        adcAS  -2        ;
+        stAS   -2        ; ! sum += odd !
+
+        jb     sqend     ; ! fixes a bug so will work on n = ffff !
+
+        jmp    loop      ;
+
+sqend   ret              ;
+
+!--------------------------------------------------!
+! z = sqrt(x*y) - sqrt(x)*sqrt(y) !
+! assume x*y fits in one word !
+main    ldA    x         ;
+        stA    a         ;
+        ldA    y         ;
+        stA    b         ;
+        call   mul       ;
+        ldA    lo        ;
+        stA    xy        ;
+
+
+        ldA    xy        ;
+        stAS   -10       ;
+        call   sqrt      ;
+        ldAS   -8        ;
+        stA    sxy       ;
+
+        ldA    x         ;
+        stAS   -10       ;
+        call   sqrt      ;
+        ldAS   -8        ;
+        stA    sx        ;
+
+        ldA    y         ;
+        stAS   -10       ;
+        call   sqrt      ;
+        ldAS   -8        ;
+        stA    sy        ;
+
+
+        
+        ldA    sx        ;
+        stA    a         ;
+        ldA    sy        ;
+        stA    b         ;
+        call   mul       ;
+        ldA    lo        ;
+        stA    sxsy      ;
+
+        ldA    sxy       ;
+        clc              ;
+        sbbA   sxsy      ;
+        stA    z         ;
+
+done    jmp    done      ;
+
+        dseg
+
+!vars for main   !
+x       rw     1         ;
+y       rw     1         ;
+z       rw     1         ;
+xy      rw     1         ;
+sxy     rw     1         ;
+sx      rw     1         ;
+sy      rw     1         ;
+sxsy    rw     1
+
+
+! vars for mul   !
+a       rw     1         ;
+b       rw     1         ;
+hi      rw     1         ;
+lo      rw     1         ;
+thi     rw     1         ;
+tlo     rw     1         ;
+
+
+!vars for sqrt !
+!  these now reside on the stack :
+n       rw     1         ; 
+answer  rw     1         ; 
+odd     rw     1         ;
+sum     rw     1         ;
+!
+
+
+stack   rw  2000         ;
+estack  rw     1         ;
+        end
+      
